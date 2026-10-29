@@ -51,7 +51,7 @@ async def get_messages(client, message_ids, chat_id=None):
                 message_ids=temb_ids
             )
         except FloodWait as e:
-            await asyncio.sleep(e.x)
+            await asyncio.sleep(getattr(e, "value", getattr(e, "x", 1)))
             msgs = await client.get_messages(
                 chat_id=chat_id,
                 message_ids=temb_ids
@@ -65,8 +65,14 @@ async def get_messages(client, message_ids, chat_id=None):
 async def get_message_source(client, message):
     """Returns (chat_id, message_id) for an accessible Telegram post."""
     if message.forward_from_chat and message.forward_from_message_id:
-        chat = await client.get_chat(message.forward_from_chat.id)
-        return chat.id, message.forward_from_message_id
+        try:
+            chat = await client.get_chat(message.forward_from_chat.id)
+            post = await client.get_messages(chat.id, message.forward_from_message_id)
+            if post and not getattr(post, "empty", False):
+                return chat.id, message.forward_from_message_id
+        except Exception:
+            pass
+        return None
     if not message.text:
         return None
     match = re.search(r"(?:https?://)?(?:www\.)?t\.me/(?:(c)/)?([A-Za-z0-9_]+)/([0-9]+)(?:[/?#]|$)", message.text.strip())
@@ -117,7 +123,7 @@ async def delete_file(messages, client, process):
         try:
             await client.delete_messages(chat_id=msg.chat.id, message_ids=[msg.id])
         except Exception as e:
-            await asyncio.sleep(e.x)
+            await asyncio.sleep(getattr(e, "value", getattr(e, "x", 1)))
             print(f"The attempt to delete the media {msg.id} was unsuccessful: {e}")
 
     await process.edit_text(AUTO_DEL_SUCCESS_MSG)

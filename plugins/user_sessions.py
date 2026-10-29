@@ -74,12 +74,12 @@ async def receive_session(bot, msg):
                 raise ValueError("Unauthorized session")
             me = await client.get_me()
         _sessions[msg.from_user.id] = (kind, client)
-        await msg.reply(f"Connected ({kind}) as ID {me.id}. This session only manages your login, not file delivery.")
+        await bot.send_message(msg.chat.id, f"Connected ({kind}) as ID {me.id}. Session is kept in RAM and is not used for file delivery.")
     except Exception as e:
         if client:
             try:
                 await (client.stop() if kind == "pyrogram" else client.disconnect())
             except Exception:
                 pass
-        await msg.reply(f"Connection failed: {type(e).__name__}. Check string, API credentials and session validity.")
+        await bot.send_message(msg.chat.id, f"Connection failed: {type(e).__name__}. Check string, API credentials and session validity.")
     raise StopPropagation

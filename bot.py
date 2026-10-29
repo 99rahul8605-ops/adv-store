@@ -56,8 +56,12 @@ class Bot(Client):
                 self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/CodeXBotzSupport for support")
                 sys.exit()
         try:
+            if not CHANNEL_ID:
+                raise ValueError("CHANNEL_ID is required for the original DB copy flow")
             if DB_CHANNEL_USERNAME:
-                await self.get_chat(DB_CHANNEL_USERNAME)
+                resolved = await self.get_chat(DB_CHANNEL_USERNAME)
+                if resolved.id != CHANNEL_ID:
+                    raise ValueError("DB_CHANNEL_USERNAME and CHANNEL_ID identify different chats")
             db_channel = await self.get_chat(CHANNEL_ID)
             self.db_channel = db_channel
             test = await self.send_message(chat_id = db_channel.id, text = "Test Message")

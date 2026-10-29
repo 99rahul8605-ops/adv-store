@@ -27,7 +27,11 @@ async def start_command(client: Client, message: Message):
             base64_string = text.split(" ", 1)[1]
         except:
             return
-        string = await decode(base64_string)
+        try:
+            string = await decode(base64_string)
+        except (ValueError, UnicodeError, UnicodeDecodeError):
+            await message.reply_text("Invalid or expired file link.")
+            return
         argument = string.split(":" if string.startswith("src:") else "-")
         source_chat = client.db_channel.id
         try:
@@ -52,8 +56,8 @@ async def start_command(client: Client, message: Message):
         temp_msg = await message.reply("Please wait...")
         try:
             messages = await get_messages(client, ids, chat_id=source_chat)
-        except:
-            await message.reply_text("Something went wrong..!")
+        except Exception:
+            await temp_msg.edit_text("This file is unavailable or the bot lacks access to its channel/group.")
             return
         await temp_msg.delete()
 
