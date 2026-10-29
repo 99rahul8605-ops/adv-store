@@ -6,11 +6,32 @@ from bot import Bot
 from config import ADMINS
 from helper_func import encode, get_message_source
 
+
+async def tracked_ask(client, user_id, **kwargs):
+    active = getattr(client, "_active_link_prompts", None)
+    if active is None:
+        active = set()
+        client._active_link_prompts = active
+
+    active.add(user_id)
+    try:
+        return await client.ask(**kwargs)
+    finally:
+        active.discard(user_id)
+
+
 @Bot.on_message(filters.private & filters.user(ADMINS) & filters.command('batch'))
 async def batch(client: Client, message: Message):
+    active = getattr(client, "_active_link_prompts", None)
+    if active is None:
+        active = set()
+        client._active_link_prompts = active
+
+    active.add(message.from_user.id)
+
     while True:
         try:
-            first_message = await client.ask(text = "Forward the first message from an accessible channel/group, or send its post link", chat_id = message.from_user.id, filters=(filters.forwarded | (filters.text & ~filters.forwarded)), timeout=60)
+            first_message = await tracked_ask(client, message.from_user.id, text = "Forward the first message from an accessible channel/group, or send its post link", chat_id = message.from_user.id, filters=(filters.forwarded | (filters.text & ~filters.forwarded)), timeout=60)
         except:
             return
         first_source = await get_message_source(client, first_message)
@@ -22,7 +43,7 @@ async def batch(client: Client, message: Message):
 
     while True:
         try:
-            second_message = await client.ask(text = "Forward the last message from the SAME channel/group, or send its post link", chat_id = message.from_user.id, filters=(filters.forwarded | (filters.text & ~filters.forwarded)), timeout=60)
+            second_message = await tracked_ask(client, message.from_user.id, text = "Forward the last message from the SAME channel/group, or send its post link", chat_id = message.from_user.id, filters=(filters.forwarded | (filters.text & ~filters.forwarded)), timeout=60)
         except:
             return
         last_source = await get_message_source(client, second_message)
@@ -44,7 +65,7 @@ async def batch(client: Client, message: Message):
 async def link_generator(client: Client, message: Message):
     while True:
         try:
-            channel_message = await client.ask(text = "Forward a message from an accessible channel/group or send its post link", chat_id = message.from_user.id, filters=(filters.forwarded | (filters.text & ~filters.forwarded)), timeout=60)
+            channel_message = await tracked_ask(client, message.from_user.id, text = "Forward a message from an accessible channel/group or send its post link", chat_id = message.from_user.id, filters=(filters.forwarded | (filters.text & ~filters.forwarded)), timeout=60)
         except:
             return
         source = await get_message_source(client, channel_message)
