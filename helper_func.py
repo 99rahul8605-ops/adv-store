@@ -62,33 +62,45 @@ async def get_messages(client, message_ids, chat_id=None):
         messages.extend(msgs)
     return messages
 
-async def get_message_source(client, message):
-    """Returns (chat_id, message_id) for an accessible Telegram post."""
+async def get_message_source(client, message, *, diagnose=False):
+    """Return (chat_id, message_id) only when bot can deliver that post.
+
+    diagnose=True adds a reason without exposing or forwarding private content.
+    """
+    ref = None
+    mid = None
     if message.forward_from_chat and message.forward_from_message_id:
-        try:
-            chat = await client.get_chat(message.forward_from_chat.id)
-            post = await client.get_messages(chat.id, message.forward_from_message_id)
-            if post and not getattr(post, "empty", False):
-                return chat.id, message.forward_from_message_id
-        except Exception:
-            pass
-        return None
-    if not message.text:
-        return None
-    match = re.search(r"(?:https?://)?(?:www\.)?t\.me/(?:(c)/)?([A-Za-z0-9_]+)/([0-9]+)(?:[/?#]|$)", message.text.strip())
-    if not match:
-        return None
-    private, identifier, mid = match.groups()
-    chat_ref = int("-100" + identifier) if private and identifier.isdigit() else identifier
+        ref = message.forward_from_chat.id
+        mid = message.forward_from_message_id
+    elif message.text:
+        match = re.search(r"(?:https?://)?(?:www\.)?t\.me/(?:(c)/)?([A-Za-z0-9_]+)/([0-9]+)(?:[/?#]|$)", message.text.strip())
+        if match:
+            private, identifier, mid = match.groups()
+            ref = int("-100" + identifier) if private and identifier.isdigit() else identifier
+            mid = int(mid)
+    if ref is None:
+        return (None, "Invalid post link or forwarded message.") if diagnose else None
+    chat_id = ref
     try:
-        chat = await client.get_chat(chat_ref)
-        # Validate that this bot can actually read the post before creating a delivery link.
-        post = await client.get_messages(chat.id, int(mid))
-        if not post or getattr(post, "empty", False):
-            return None
-        return chat.id, int(mid)
+        chat = await client.get_chat(ref)
+        chat_id = chat.id
+        post = await client.get_messages(chat.id, mid)
+        if post and not getattr(post, "empty", False):
+            result = (chat.id, int(mid))
+            return (result, None) if diagnose else result
     except Exception:
-        return None
+        pass
+    # User account can be allowed to read without bot being allowed to deliver.
+    # Do not generate a nonfunctional public link for that case.
+    from plugins.user_sessions import session_can_read
+    if isinstance(chat_id, int) and message.from_user and await session_can_read(message.from_user.id, chat_id, int(mid)):
+        reason = ("Your connected user session can read this private post, but this bot cannot deliver it. "
+                  "For the current file-send flow, add the bot to the source channel/group, "
+                  "or copy the authorized file to its DB channel.")
+    else:
+        reason = ("The bot cannot access this post. Confirm the link and bot membership. "
+                  "For a private t.me/c link, the account session may also need its peer cached.")
+    return (None, reason) if diagnose else None
 
 
 async def get_message_id(client, message):

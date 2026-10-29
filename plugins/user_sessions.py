@@ -83,3 +83,21 @@ async def receive_session(bot, msg):
                 pass
         await bot.send_message(msg.chat.id, f"Connection failed: {type(e).__name__}. Check string, API credentials and session validity.")
     raise StopPropagation
+
+
+async def session_can_read(owner_id: int, chat_id: int, message_id: int) -> bool:
+    """Check account access to a post. Never return credentials or expose file content."""
+    state = _sessions.get(owner_id)
+    if state is None:
+        return False
+    kind, client = state
+    try:
+        if kind == "pyrogram":
+            result = await client.get_messages(chat_id, message_id)
+            return bool(result and not getattr(result, "empty", False))
+        # Telethon uses signed -100 channel IDs but needs peer resolution
+        entity = await client.get_input_entity(chat_id)
+        result = await client.get_messages(entity, ids=message_id)
+        return result is not None
+    except Exception:
+        return False

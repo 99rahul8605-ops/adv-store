@@ -39,9 +39,6 @@ class Bot(Client):
 
     async def start(self):
         await super().start()
-
-        # Resolve DB channel into Pyrogram peer cache
-        await self.get_chat("jjjhft6uuhee")
         usr_bot_me = await self.get_me()
         self.uptime = datetime.now()
 
