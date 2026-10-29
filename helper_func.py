@@ -63,9 +63,10 @@ async def get_messages(client, message_ids, chat_id=None):
     return messages
 
 async def get_message_source(client, message, *, diagnose=False):
-    """Return (chat_id, message_id) only when bot can deliver that post.
+    """Resolve a source post for direct bot access or user-session DB staging.
 
-    diagnose=True adds a reason without exposing or forwarding private content.
+    When diagnose=True, `session_only` means the caller must stage the post
+    into the DB channel before generating a public download link.
     """
     ref = None
     mid = None
@@ -90,17 +91,37 @@ async def get_message_source(client, message, *, diagnose=False):
             return (result, None) if diagnose else result
     except Exception:
         pass
-    # User account can be allowed to read without bot being allowed to deliver.
-    # Do not generate a nonfunctional public link for that case.
-    from plugins.user_sessions import session_can_read
-    if isinstance(chat_id, int) and message.from_user and await session_can_read(message.from_user.id, chat_id, int(mid)):
-        reason = ("Your connected user session can read this private post, but this bot cannot deliver it. "
-                  "For the current file-send flow, add the bot to the source channel/group, "
-                  "or copy the authorized file to its DB channel.")
+    # A user account's access is different from a bot's delivery access.
+    from plugins.user_sessions import session_read_status
+    status = await session_read_status(
+        message.from_user.id if message.from_user else 0, chat_id, int(mid)
+    )
+    if status == "available" and diagnose:
+        # The caller must stage this source through the user's own session
+        # into the bot's DB channel before generating any public /start link.
+        return (chat_id, int(mid)), "session_only"
+    if status == "not_connected":
+        reason = ("The bot cannot access this post. Your user session is not connected. "
+                  "Sessions are kept only in RAM, so after a bot restart use "
+                  "/connect telethon or /connect pyrogram again.")
+    elif status == "available":
+        reason = ("Your connected user account can read this post, but the bot cannot. "
+                  "This version sends files as the bot, so no working link can be made "
+                  "until you add the bot to the source chat, or move an authorized copy "
+                  "to the database channel.")
+    elif status == "chat_not_found":
+        reason = ("This private channel/group was not found in your connected account's "
+                  "dialogs. Confirm that account is a member. A t.me/c link by itself "
+                  "does not grant access.")
+    elif status == "post_unavailable":
+        reason = ("Your connected account can resolve the chat but this message is "
+                  "not available to it. Check the post number and permissions.")
     else:
-        reason = ("The bot cannot access this post. Confirm the link and bot membership. "
-                  "For a private t.me/c link, the account session may also need its peer cached.")
+        reason = ("Telegram could not verify access with the connected account. "
+                  "Check membership/session validity and retry. The bot still needs "
+                  "access to send files using the current delivery flow.")
     return (None, reason) if diagnose else None
+
 
 
 async def get_message_id(client, message):
