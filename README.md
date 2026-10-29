@@ -1,137 +1,185 @@
+# File-sharing-Bot
+
 <p align="center">
-  <img src="https://i.ibb.co/dJ0gpJf1/photo-2025-06-16-12-07-05-7516517596376596504.jpg" alt="VJ-FILE-STORE-BOT Logo">
+  <a href="https://www.python.org">
+    <img src="http://ForTheBadge.com/images/badges/made-with-python.svg" width ="250">
+  </a>
+  <a href="https://t.me/CodeXBotz">
+    <img src="https://github.com/CodeXBotz/PyrogramGenStr/blob/main/resources/madebycodex-badge.svg" width="250">
+  </a><br>
+  <a href="https://t.me/CodeXBotz">
+    &nbsp;<img src="https://img.shields.io/badge/Code%20%F0%9D%95%8F%20Botz-Channel-blue?style=flat-square&logo=telegram" width="130" height="18">&nbsp;
+  </a>
+  <a href="https://t.me/codexbotzsupport">
+    &nbsp;<img src="https://img.shields.io/badge/Code%20%F0%9D%95%8F%20Botz-Group-blue?style=flat-square&logo=telegram" width="130" height="18">&nbsp;
+  </a>
+  <br>
+  <a href="https://github.com/CodeXBotz/File-Sharing-Bot/stargazers">
+    <img src="https://img.shields.io/github/stars/CodeXBotz/File-Sharing-Bot?style=social">
+  </a>
+  <a href="https://github.com/CodeXBotz/File-Sharing-Bot/fork">
+    <img src="https://img.shields.io/github/forks/CodeXBotz/File-Sharing-Bot?label=Fork&style=social">
+  </a>  
 </p>
-<h1 align="center">
-  VJ FILE STORE BOT
-</h1>
 
-![Typing SVG](https://readme-typing-svg.herokuapp.com/?lines=Welcome+To+VJ-FILE-STORE-BOT;A+Highly+Advance+File+Store+Bot;Made+By+Yt-@Tech_VJ!;With+Clone+Feature+Stream/Download+Link;Custom+Url+Shortner+Auto+Delete+Feature;A+Bot+With+Fully+Advanced+Feature!;Thank+You!)
-</p>
 
-### Deploy Tutorial [Video Link](https://youtu.be/VxAn9VcYtQg)
+Telegram Bot to store Posts and Documents and it can Access by Special Links.
+I Guess This Will Be Usefull For Many People.....😇. 
 
-## Features
 
-<b><details><summary>Tap On Me For Bot Features</summary>
+### Features
+- Fully customisable.
+- Customisable welcome & Forcesub messages.
+- More than one Posts in One Link.
+- Can be deployed on heroku directly.
+- Protect Content to Prevent Forwarding
+- Auto-Delete Files After a Configurable Time
+
+## What’s Next
+
+These features are in the pipeline, and contributions from the community are welcome!
+
+- [x] **Channel Join Request**  
+  Implement a feature that prompts users to join a specified Telegram channel before accessing the bot's functionalities.
+
+
+### How to Contribute
+1. Check the [contribution guidelines](https://github.com/CodeXBotz/File-Sharing-Bot/blob/main/CONTRIBUTING.md) for detailed instructions.  
+2. Pick any feature and create a new issue or comment on an existing one.  
+3. Discuss your implementation plan with maintainers to align your contributions with project goals.  
+
+We encourage all developers to contribute ideas, report bugs, and share improvements. Together, we can make this project even better! 🚀
  
-- [x] Permanent Link By Using Website [ Premium Feature] 
-- [x] Clone Feature Added [ Premium Feature] 
-- [x] Token Verification Feature 
-- [x] Stram Feature Added With Many Player Support
-- [x] Custom Url Shortner Support Any User Can Add His Own Shortner
-- [x] Batch Support Added, Any User Can Use Batch By Making Bot Admin In His File Store Channel
-- [x] Auto Delete Feature Added
-- [x] Custom Start Message With Picture And Buttons
-</b>
-</details>
+ 
+### Setup
 
-## Environment Variables
+- Add the bot to Database Channel with all permission
+- Add bot to ForceSub channel as Admin with Invite Users via Link Permission if you enabled ForceSub 
 
-<b><details><summary>Tap On Me For Environment Variable</summary>
+##
+### Installation
+#### Deploy on Heroku
+**BEFORE YOU DEPLOY ON HEROKU, YOU SHOULD FORK THE REPO AND CHANGE ITS NAME TO ANYTHING ELSE**<br>
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)</br>
+<a href="https://youtu.be/LCrkRTMkmzE">
+  <img src="https://img.shields.io/badge/How%20to-Deploy-red?logo=youtube" width="147">
+</a><br>
+**Check This Tutorial Video on YouTube for any Help**<br>
+**Thanks to [Erich](https://t.me/ErichDaniken) and his [InFoTel](https://t.me/InFoTel_Group) for this Video**
 
-- `API_ID` : Get From [my.telegram.org](https://my.telegram.org)
-- `API_HASH` : Get From [my.telegram.org](https://my.telegram.org)
-- `BOT_TOKEN` : Get From [BotFather](https://telegram.me/BotFather)
-- `BOT_USERNAME` : Your Bot Username Without @
-- `DB_URI` : Mongodb Database Url For Main Bot [Tutorial Watch Here](https://youtu.be/DAHRmFdw99o)
-- `CLONE_DB_URI` : Mongodb Database Url For Clone Bot [Tutorial Watch Here](https://youtu.be/DAHRmFdw99o)
-- `ADMINS` : It mean Admin/Owner Id For Broadcasting Message.
-- `LOG_CHANNEL` : Log channel id start with -100xxxxxx
-- `URL` : Your Server App Link With https:// and in last make sure one / is given.
-- `AUTO_DELETE` : Time In Minutes
-- `AUTO_DELETE_TIME` : Time In Seconds
-- `PYTHON_VERSION` : This Variable Is Only For Render, Value IS `3.10.8`
-- `PORT` : This Variable Is Only For Render, Value IS `8080`
-</b>
-</details>
+#### Deploy on Railway
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/1jKLr4)
 
-## See How Bot Look Like
+#### Deploy on Koyeb
 
-<b><details><summary>Tap On Me For Demo Bot</summary></b>
-
-<img src="https://graph.org/file/bb9c59043c52072e8dc93.jpg" alt="Bot Demo">
-<img src="https://graph.org/file/295e41dfab93acf42a111.jpg" alt="Bot Demo">
-<img src="https://graph.org/file/ccc1b6ab4967a7d155ab8.jpg" alt="Bot Demo">
-<img src="https://graph.org/file/75db5257c39436b734b49.jpg" alt="Bot Demo">
-<img src="https://graph.org/file/1ce62a17012ed5723aaca.jpg" alt="Bot Demo">
-</details>
-
-## Command To Use Bot
-
-<b><details><summary>Tap On Me For Bot Commands</summary>
-
-🖍️ Main Bot Commands :-
-
-- `/start` : By This Command You Can Check Bot Is Alive Or Not
-- `/link` : By This Command You Can Generate A Shareable Link Of File By Replying This Command To That File
-- `/batch` : By This Command You Can Generate Multiple File Shareable Link At A Time [Use Like This /batch (first post link) (last post link)]
-- `/base_site` : By This Command You Can Set Your Url Shortner Domain [Use Like This /base_site domain.com]
-- `/api` : By This Command You Can Set Your Url Shortner Api [Use Like This /api (your api key)]
-- `/deletecloned` : By This Command You Can Delete Your Cloned Bot [Use Like This /deletecloned (your bot token)]
-- `/broadcast` : By Using This Command You Can Broadcast A Message To Your Bot User, Reply This Command To Broadcast Message [Owner Only Command]
-
-🖍️ Clone Bot Commands :- 
-
-- `/start` : By This Command You Can Check Bot Is Alive Or Not
-- `/link` : By This Command You Can Generate A Shareable Link Of File By Replying This Command To That File
-- `/base_site` : By This Command You Can Set Your Url Shortner Domain [Use Like This /base_site domain.com]
-- `/api` : By This Command You Can Set Your Url Shortner Api [Use Like This /api (your api key)]
-- `/broadcast` : By Using This Command You Can Broadcast A Message To Your Bot User, Reply This Command To Broadcast Message [Clone Bot Owner Only Command]
-
-</b>
-</details>
-
-## Credit
-
-<b><details><summary>Tap On Me For See Credit</summary>
-
-💝 Credit Goes To [Tech VJ](https://telegram.me/VJ_Bots)
-
-🖍️ This Code Is Fully Written Or Coded And Public By [Tech VJ](https://github.com/VJBots) So Don't Forgot To Give Credit
-
-💖 And Thank You So Much To All Who Help In This Journey 💕
-
-Copyright ©️ [Tech VJ](https://youtube.com/@Tech_VJ)
-
-</b>
-</details>
-
-## About Owner 
-
-<b><details><summary>Tap On Me For See Details Of Owner</summary>
-
-- YouTube Channel : [Tech VJ](https://youtube.com/@Tech_VJ)
-- Telegram Channel : [VJ Bots](https://telegram.me/VJ_Bots)
-- Contact Link : [King VJ](https://telegram.me/Kingvj01)
-- Instagram Id Link : [Tech VJ](https://instagram.com/tech.vj)
-
-</b>
-</details>
+The fastest way to deploy the application is to click the **Deploy to Koyeb** button below.
 
 
-### Copyright ©️ [Tech VJ](https://youtube.com/@Tech_VJ)
-
-<b>Selling This Repo Or Code Of This Repo For Money Is Strictly Prohibited 🚫</b>
+[![Deploy to Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/deploy?type=git&repository=github.com/CodeXBotz/File-Sharing-Bot&branch=koyeb&name=filesharingbot)
 
 
-## User account connection (admin-only)
+#### Deploy in your VPS
+````bash
+git clone https://github.com/CodeXBotz/File-Sharing-Bot
+cd File-Sharing-Bot
+pip3 install -r requirements.txt
+# <Create config.py appropriately>
+python3 main.py
+````
 
-The optional user-session connection plugin accepts **Pyrogram/Pyrofork** and
-**Telethon** StringSessions. In the bot's **private chat**, an ID in `ADMINS`
-can run `/connect pyrogram` or `/connect telethon`, then send the StringSession
-as the next message. The bot attempts to delete the sensitive message, checks
-the account, and confirms connection. `/sessionstatus` displays non-secret
-account details; `/cancel` cancels a pending prompt; `/logout` removes only
-the bot-side connection (it does **not** revoke Telegram authorization).
+### Admin Commands
 
-Sessions are **memory-only** and do not survive process restarts. Reconnect by
-sending the same still-authorized session after restarting. Do not put session
-strings in commands, public chats, Git, or log files. Bot admins have powerful
-access to the user account while connected; deploy only to a server you trust.
+```
+/start - start the bot or get posts
 
-**Scope:** This adds connection management, not link generation. Existing
-file-link, batch, streaming and delivery logic is unchanged. Accessing private
-channel files without adding the bot still requires explicitly integrating the
-connected user client into the relevant file-read/delivery paths; connecting
-alone does not give the bot account access to those channels. Use sessions only
-for Telegram accounts/channels you are authorized to access.
+/batch - create link for more than one posts
+
+/genlink - create link for one post
+
+/users - view bot statistics
+
+/broadcast - broadcast any messages to bot users
+
+/stats - checking your bot uptime
+```
+
+### Variables
+
+* `API_HASH` Your API Hash from my.telegram.org
+* `APP_ID` Your API ID from my.telegram.org
+* `TG_BOT_TOKEN` Your bot token from @BotFather
+* `OWNER_ID` Must enter Your Telegram Id
+* `CHANNEL_ID` Your Channel ID eg:- -100xxxxxxxx
+* `DATABASE_URL` Your mongo db url
+* `ADMINS` Optional: A space separated list of user_ids of Admins, they can only create links
+* `START_MESSAGE` Optional: start message of bot, use HTML and <a href='https://github.com/codexbotz/File-Sharing-Bot/blob/main/README.md#start_message'>fillings</a>
+* `START_PIC` Optional: URL or file path of the image to be sent as the start message
+* `FORCE_SUB_MESSAGE`Optional:Force sub message of bot, use HTML and Fillings
+* `FORCE_SUB_CHANNEL` Optional: ForceSub Channel ID, leave 0 if you want disable force sub
+* `PROTECT_CONTENT` Optional: True if you need to prevent files from forwarding
+* `AUTO_DELETE_TIME `  Set the time in seconds for automatic file deletion. Default is False, which disables auto-deletion.
+* `JOIN_REQUEST_ENABLED` Optional: Set to "True" to enable join request for the channel. Default is "False".
+
+### Extra Variables
+
+* `AUTO_DELETE_MSG` put your custom deletion text if you want Setup Custom deletion messaeg,
+* `AUTO_DEL_SUCCESS_MSG` Set your custom success message for when the file is successfully deleted
+* `CUSTOM_CAPTION` put your Custom caption text if you want Setup Custom Caption, you can use HTML and <a href='https://github.com/CodeXBotz/File-Sharing-Bot/blob/main/README.md#custom_caption'>fillings</a> for formatting (only for documents)
+* `DISABLE_CHANNEL_BUTTON` Put True to Disable Channel Share Button, Default if False
+* `BOT_STATS_TEXT` put your custom text for stats command, use HTML and <a href='https://github.com/codexbotz/File-Sharing-Bot/blob/main/README.md#custom_stats'>fillings</a>
+* `USER_REPLY_TEXT` put your text to show when user sends any message, use HTML
+* `DATABASE_NAME` Your mongo db session name
+
+
+### Fillings
+#### START_MESSAGE | FORCE_SUB_MESSAGE
+
+* `{first}` - User first name
+* `{last}` - User last name
+* `{id}` - User ID
+* `{mention}` - Mention the user
+* `{username}` - Username
+
+#### CUSTOM_CAPTION
+
+* `{filename}` - file name of the Document
+* `{previouscaption}` - Original Caption
+
+#### CUSTOM_STATS
+
+* `{uptime}` - Bot Uptime
+
+
+## Support   
+Join Our [Telegram Group](https://www.telegram.dog/codexbotzsupport) For Support/Assistance And Our [Channel](https://www.telegram.dog/codexbotz) For Updates.   
+   
+Report Bugs, Give Feature Requests There..   
+
+### Credits
+
+- Thanks To Dan For His Awsome [Libary](https://github.com/pyrogram/pyrogram)
+- Our Support Group Members
+
+### Licence
+[![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](http://www.gnu.org/licenses/gpl-3.0.en.html)  
+
+[FILE-SHARING-BOT](https://github.com/CodeXBotz/File-Sharing-Bot/) is Free Software: You can use, study share and improve it at your
+will. Specifically you can redistribute and/or modify it under the terms of the
+[GNU General Public License](https://www.gnu.org/licenses/gpl.html) as
+published by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version. 
+
+## Star History
+
+<a href="https://www.star-history.com/#CodeXBotz/File-Sharing-Bot&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=CodeXBotz/File-Sharing-Bot&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=CodeXBotz/File-Sharing-Bot&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=CodeXBotz/File-Sharing-Bot&type=date&legend=top-left" />
+ </picture>
+</a>
+
+##
+
+   **Star this Repo if you Liked it ⭐⭐⭐**
+
