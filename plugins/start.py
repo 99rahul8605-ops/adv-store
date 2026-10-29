@@ -27,51 +27,41 @@ async def start_command(client: Client, message: Message):
             base64_string = text.split(" ", 1)[1]
         except:
             return
-        try:
-            string = await decode(base64_string)
-        except Exception:
-            await message.reply_text('Invalid file link.')
-            return
+        string = await decode(base64_string)
+        argument = string.split(":" if string.startswith("src:") else "-")
         source_chat = client.db_channel.id
         try:
-            if string.startswith('v2:'):
-                parts = string.split(':')
-                if len(parts) not in (3, 4):
-                    raise ValueError('invalid link')
-                source_chat = parts[1]
-                first = int(parts[2]); last = int(parts[3]) if len(parts) == 4 else first
-                if abs(last - first) > 199:
-                    raise ValueError('batch exceeds 200 files')
-                ids = list(range(first, last + (1 if first <= last else -1), 1 if first <= last else -1))
+            if argument[0] == "src" and len(argument) in (3, 4):
+                source_chat = int(argument[1])
+                first = int(argument[2])
+                last = int(argument[3]) if len(argument) == 4 else first
+                if first < 1 or last < 1 or abs(last-first) > 199:
+                    raise ValueError("Invalid range")
+                ids = list(range(first, last + (1 if last >= first else -1), 1 if last >= first else -1))
+            elif argument[0] == "get" and len(argument) in (2, 3):
+                factor = abs(client.db_channel.id)
+                first = int(argument[1]) // factor
+                last = int(argument[2]) // factor if len(argument) == 3 else first
+                if first < 1 or last < 1 or abs(last-first) > 199:
+                    raise ValueError("Invalid range")
+                ids = list(range(first, last + (1 if last >= first else -1), 1 if last >= first else -1))
             else:
-                argument = string.split('-')
-                if len(argument) == 3:
-                    first = int(int(argument[1]) / abs(client.db_channel.id))
-                    last = int(int(argument[2]) / abs(client.db_channel.id))
-                    if abs(last - first) > 199:
-                        raise ValueError('batch exceeds 200 files')
-                    ids = list(range(first, last + (1 if first <= last else -1), 1 if first <= last else -1))
-                elif len(argument) == 2:
-                    ids = [int(int(argument[1]) / abs(client.db_channel.id))]
-                else:
-                    raise ValueError('invalid link')
-        except Exception:
-            await message.reply_text('Invalid or oversized file link.')
+                return
+        except (ValueError, IndexError, ZeroDivisionError):
             return
-        temp_msg = await message.reply('Please wait...')
+        temp_msg = await message.reply("Please wait...")
         try:
-            messages = await get_messages(client, ids, source_chat)
-        except Exception:
-            # User sessions are admin-owned; never transfer private user-session
-            # channel messages to arbitrary recipients without owner confirmation.
-            await temp_msg.delete()
-            await message.reply_text('This channel is not accessible to the bot. Ask the owner to add the bot as admin for link delivery.')
+            messages = await get_messages(client, ids, chat_id=source_chat)
+        except:
+            await message.reply_text("Something went wrong..!")
             return
         await temp_msg.delete()
 
         track_msgs = []
 
         for msg in messages:
+            if not msg or getattr(msg, "empty", False):
+                continue
 
             if bool(CUSTOM_CAPTION) & bool(msg.document):
                 caption = CUSTOM_CAPTION.format(previouscaption = "" if not msg.caption else msg.caption.html, filename = msg.document.file_name)

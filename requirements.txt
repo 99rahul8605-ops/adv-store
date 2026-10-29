@@ -9,4 +9,4 @@ dnspython
 # --- For-Web-Response ------- #
 aiohttp
 
-telethon>=1.36,<2
+telethon>=1.35,<2

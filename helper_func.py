@@ -40,52 +40,55 @@ async def decode(base64_string):
     return string
 
 async def get_messages(client, message_ids, chat_id=None):
-    """Fetch messages from a selected channel, not just the primary DB."""
     chat_id = chat_id if chat_id is not None else client.db_channel.id
-    ids = list(message_ids)
     messages = []
-    for index in range(0, len(ids), 200):
-        batch = ids[index:index + 200]
+    total_messages = 0
+    while total_messages != len(message_ids):
+        temb_ids = message_ids[total_messages:total_messages+200]
         try:
-            result = await client.get_messages(chat_id=chat_id, message_ids=batch)
+            msgs = await client.get_messages(
+                chat_id=chat_id,
+                message_ids=temb_ids
+            )
         except FloodWait as e:
-            await asyncio.sleep(getattr(e, 'value', getattr(e, 'x', 1)))
-            result = await client.get_messages(chat_id=chat_id, message_ids=batch)
-        if not isinstance(result, list):
-            result = [result]
-        messages.extend(m for m in result if m and not getattr(m, 'empty', False))
+            await asyncio.sleep(e.x)
+            msgs = await client.get_messages(
+                chat_id=chat_id,
+                message_ids=temb_ids
+            )
+        except Exception:
+            raise
+        total_messages += len(temb_ids)
+        messages.extend(msgs)
     return messages
 
-
-async def get_source(client, message):
-    """Resolve a forwarded channel post or t.me post URL. Bot access is required."""
-    forwarded_chat = getattr(message, 'forward_from_chat', None)
-    forwarded_id = getattr(message, 'forward_from_message_id', None)
-    if forwarded_chat and forwarded_id:
-        chat = await client.get_chat(forwarded_chat.id)
-        return chat, forwarded_id
+async def get_message_source(client, message):
+    """Returns (chat_id, message_id) for an accessible Telegram post."""
+    if message.forward_from_chat and message.forward_from_message_id:
+        chat = await client.get_chat(message.forward_from_chat.id)
+        return chat.id, message.forward_from_message_id
     if not message.text:
         return None
-    match = re.search(r'(?:https?://)?t\.me/(c/\d+|[a-zA-Z][a-zA-Z0-9_]{3,})/(\d+)(?:[/?#]|$)', message.text)
+    match = re.search(r"(?:https?://)?(?:www\.)?t\.me/(?:(c)/)?([A-Za-z0-9_]+)/([0-9]+)(?:[/?#]|$)", message.text.strip())
     if not match:
         return None
-    ref = match.group(1)
-    chat_ref = int('-100' + ref[2:]) if ref.startswith('c/') else ref
-    chat = await client.get_chat(chat_ref)
-    return chat, int(match.group(2))
+    private, identifier, mid = match.groups()
+    chat_ref = int("-100" + identifier) if private and identifier.isdigit() else identifier
+    try:
+        chat = await client.get_chat(chat_ref)
+        # Validate that this bot can actually read the post before creating a delivery link.
+        post = await client.get_messages(chat.id, int(mid))
+        if not post or getattr(post, "empty", False):
+            return None
+        return chat.id, int(mid)
+    except Exception:
+        return None
 
 
 async def get_message_id(client, message):
-    result = await get_source(client, message)
-    return result[1] if result else 0
-
-
-async def encode_channel_link(chat_id, first, last=None):
-    # Versioned payload, backward compatible with old get-encoded links.
-    if last is None:
-        return await encode(f'v2:{chat_id}:{first}')
-    return await encode(f'v2:{chat_id}:{first}:{last}')
-
+    """Compatibility wrapper for the original DB-only interface."""
+    source = await get_message_source(client, message)
+    return source[1] if source and source[0] == client.db_channel.id else 0
 
 def get_readable_time(seconds: int) -> str:
     count = 0

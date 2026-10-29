@@ -8,26 +8,26 @@ from logging.handlers import RotatingFileHandler
 load_dotenv()
 
 #Bot token @Botfather
-TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN") or os.getenv("BOT_TOKEN", "")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN") or os.environ.get("BOT_TOKEN", "")
 
 #Your API ID from my.telegram.org
-APP_ID = int(os.getenv("APP_ID") or os.getenv("APP_ID") or "0")
+APP_ID = int(os.environ.get("APP_ID") or os.environ.get("API_ID") or "0")
 
 #Your API Hash from my.telegram.org
 API_HASH = os.environ.get("API_HASH", "")
 
 #Your db channel Id
-CHANNEL_ID = int(os.getenv("CHANNEL_ID") or "0")
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID") or "0")
 
 #OWNER ID
-OWNER_ID = int(os.getenv("OWNER_ID") or "0")
+OWNER_ID = int(os.environ.get("OWNER_ID") or "0")
 
 #Port
-PORT = int(os.getenv("PORT", "8080"))
+PORT = int(os.environ.get("PORT", "8080"))
 
 #Database 
-DB_URI = os.getenv("DB_URI") or os.getenv("DATABASE_URL", "")
-DB_NAME = os.getenv("DB_NAME") or os.getenv("DATABASE_NAME", "filesharexbot")
+DB_URI = os.environ.get("DATABASE_URL") or os.environ.get("DB_URI", "")
+DB_NAME = os.environ.get("DATABASE_NAME") or os.environ.get("DB_NAME", "filesharexbot")
 
 #force sub channel id, if you want enable force sub
 FORCE_SUB_CHANNEL = int(os.environ.get("FORCE_SUB_CHANNEL", "0"))
@@ -65,8 +65,9 @@ DISABLE_CHANNEL_BUTTON = os.environ.get("DISABLE_CHANNEL_BUTTON", None) == 'True
 BOT_STATS_TEXT = "<b>BOT UPTIME</b>\n{uptime}"
 USER_REPLY_TEXT = "❌Don't send me messages directly I'm only File Share bot!"
 
-ADMINS.append(OWNER_ID)
-ADMINS.append(1250450587)
+if OWNER_ID and OWNER_ID not in ADMINS:
+    ADMINS.append(OWNER_ID)
+
 
 LOG_FILE_NAME = "filesharingbot.txt"
 
@@ -88,6 +89,5 @@ logging.getLogger("pyrogram").setLevel(logging.WARNING)
 def LOGGER(name: str) -> logging.Logger:
     return logging.getLogger(name)
 
-# Optional public username of the primary DB channel (for initial peer resolution)
-DB_CHANNEL_USERNAME = os.getenv("DB_CHANNEL_USERNAME", "").strip().lstrip("@")
-
+# Optional public username for the primary database channel.
+DB_CHANNEL_USERNAME = os.getenv("DB_CHANNEL_USERNAME", "").lstrip("@")

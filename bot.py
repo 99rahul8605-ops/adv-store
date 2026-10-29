@@ -1,11 +1,10 @@
-import asyncio
-asyncio.set_event_loop(asyncio.new_event_loop())
-
 #(©)Codexbotz
 
 from aiohttp import web
 from plugins import web_server
 
+import asyncio
+asyncio.set_event_loop(asyncio.new_event_loop())
 import pyromod.listen
 from pyrogram import Client
 from pyrogram.enums import ParseMode
@@ -54,7 +53,7 @@ class Bot(Client):
                 self.LOGGER(__name__).warning(a)
                 self.LOGGER(__name__).warning("Bot can't Export Invite link from Force Sub Channel!")
                 self.LOGGER(__name__).warning(f"Please Double check the FORCE_SUB_CHANNEL value and Make sure Bot is Admin in channel with Invite Users via Link Permission, Current Force Sub Channel Value: {FORCE_SUB_CHANNEL}")
-                self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/jjjhft6uuhee for support")
+                self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/CodeXBotzSupport for support")
                 sys.exit()
         try:
             if DB_CHANNEL_USERNAME:
@@ -66,9 +65,8 @@ class Bot(Client):
         except Exception as e:
             self.LOGGER(__name__).warning(e)
             self.LOGGER(__name__).warning(f"Make Sure bot is Admin in DB Channel, and Double check the CHANNEL_ID Value, Current Value {CHANNEL_ID}")
-            self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/jjjhft6uuhee for support")
+            self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/CodeXBotzSupport for support")
             sys.exit()
-
 
         self.set_parse_mode(ParseMode.HTML)
         self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/CodeXBotz")
@@ -82,7 +80,5 @@ class Bot(Client):
         await web.TCPSite(app, bind_address, PORT).start()
 
     async def stop(self, *args):
-        from plugins.user_sessions import disconnect_all
-        await disconnect_all()
         await super().stop()
         self.LOGGER(__name__).info("Bot stopped.")

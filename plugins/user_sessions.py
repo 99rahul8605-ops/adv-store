@@ -1,142 +1,85 @@
-"""Ephemeral, admin-only Telegram account connections.
-
-Never store string sessions, never export them, and do not log credentials.
-/logout disconnects locally without calling Telegram log_out().
-"""
+"""Optional admin-only user session connections. Does not alter delivery logic."""
 import asyncio
-import re
-from dataclasses import dataclass
-from pyrogram import filters, Client
+from pyrogram import filters, StopPropagation
+from pyrogram.types import Message
 from bot import Bot
-from config import ADMINS, OWNER_ID, APP_ID, API_HASH
+from config import ADMINS, APP_ID, API_HASH
 
-AUTHORIZED = set(ADMINS + [OWNER_ID]) - {0}
-_sessions = {}  # Telegram admin id -> (provider, connected client)
-_pending = {}   # Telegram admin id -> provider
+_sessions = {}
+_pending = {}
 
+@Bot.on_message(filters.private & filters.user(ADMINS) & filters.command("connect"), group=-10)
+async def connect_session(bot, msg: Message):
+    if len(msg.command) != 2 or msg.command[1].lower() not in ("pyrogram", "telethon"):
+        await msg.reply("Use /connect pyrogram or /connect telethon")
+        raise StopPropagation
+    _pending[msg.from_user.id] = msg.command[1].lower()
+    await msg.reply("Send your OWN StringSession here in this private chat. It will be deleted after processing. /cancel to abort. Treat it as a password.")
+    raise StopPropagation
 
-async def disconnect_all():
-    for owner in list(_sessions):
-        await _disconnect(owner)
+@Bot.on_message(filters.private & filters.user(ADMINS) & filters.command("cancel"), group=-10)
+async def cancel_session(bot, msg):
+    _pending.pop(msg.from_user.id, None)
+    await msg.reply("Connection cancelled.")
+    raise StopPropagation
 
+@Bot.on_message(filters.private & filters.user(ADMINS) & filters.command("sessionstatus"), group=-10)
+async def session_status(bot, msg):
+    state = _sessions.get(msg.from_user.id)
+    await msg.reply(f"Connected: {state[0]}" if state else "No user session connected.")
+    raise StopPropagation
 
-async def _disconnect(owner):
-    item = _sessions.pop(owner, None)
-    if item:
-        provider, client = item
+@Bot.on_message(filters.private & filters.user(ADMINS) & filters.command("logout"), group=-10)
+async def disconnect_session(bot, msg):
+    _pending.pop(msg.from_user.id, None)
+    state = _sessions.pop(msg.from_user.id, None)
+    if state:
+        kind, client = state
         try:
-            if provider == 'pyrogram':
-                await client.stop()
-            else:
-                await client.disconnect()
+            await (client.stop() if kind == "pyrogram" else client.disconnect())
         except Exception:
             pass
+    await msg.reply("Disconnected from this bot only. Telegram authorization was NOT revoked. Keep your session string to reconnect.")
+    raise StopPropagation
 
-
-async def resolve_user_source(owner, text):
-    item = _sessions.get(owner)
-    if not item or not text:
-        return None
-    match = re.search(r'(?:https?://)?t\.me/(c/\d+|[A-Za-z][A-Za-z0-9_]{3,})/(\d+)(?:[/?#]|$)', text)
-    if not match:
-        return None
-    ref, mid = match.group(1), int(match.group(2))
-    peer = int('-100' + ref[2:]) if ref.startswith('c/') else ref
-    provider, account = item
-    try:
-        if provider == 'pyrogram':
-            chat = await account.get_chat(peer)
-            # Verify the message exists and user account can read it.
-            msg = await account.get_messages(chat.id, mid)
-            if not msg or getattr(msg, 'empty', False):
-                return None
-            return chat, mid
-        else:
-            entity = await account.get_entity(peer)
-            msg = await account.get_messages(entity, ids=mid)
-            if not msg:
-                return None
-            from types import SimpleNamespace
-            return SimpleNamespace(id=-(10**12 + entity.id), username=getattr(entity, 'username', None)), mid
-    except Exception:
-        return None
-
-
-@Bot.on_message(filters.private & filters.user(list(AUTHORIZED)) & filters.command('connect'))
-async def connect(client, message):
-    owner = message.from_user.id
-    if len(message.command) != 2 or message.command[1].lower() not in ('pyrogram', 'telethon'):
-        await message.reply_text('Usage: /connect pyrogram OR /connect telethon')
+@Bot.on_message(filters.private & filters.user(ADMINS) & filters.text & ~filters.command(["connect", "cancel", "logout", "sessionstatus"]), group=-20)
+async def receive_session(bot, msg):
+    kind = _pending.pop(msg.from_user.id, None)
+    if not kind:
         return
-    _pending[owner] = message.command[1].lower()
-    await message.reply_text('Send your own Telegram StringSession in THIS private chat. It will be deleted after reading when permissions allow. /cancel to abort. Never share sessions in groups.')
-
-
-@Bot.on_message(filters.private & filters.user(list(AUTHORIZED)) & filters.command('cancel'))
-async def cancel(client, message):
-    _pending.pop(message.from_user.id, None)
-    await message.reply_text('Connection cancelled.')
-
-
-@Bot.on_message(filters.private & filters.user(list(AUTHORIZED)) & filters.command('sessionstatus'))
-async def status(client, message):
-    item = _sessions.get(message.from_user.id)
-    await message.reply_text('Connected: ' + item[0] if item else 'No user session connected.')
-
-
-@Bot.on_message(filters.private & filters.user(list(AUTHORIZED)) & filters.command('logout'))
-async def logout(client, message):
-    owner = message.from_user.id
-    _pending.pop(owner, None)
-    await _disconnect(owner)
-    await message.reply_text('Disconnected from bot. Your Telegram authorization has NOT been revoked; you may reuse the original session string.')
-
-
-# group=-1 ensures this is processed before the generic post copier.
-@Bot.on_message(filters.private & filters.user(list(AUTHORIZED)) & filters.text, group=-1)
-async def receive_session(client, message):
-    owner = message.from_user.id
-    provider = _pending.get(owner)
-    if not provider or message.text.startswith('/'):
-        return
-    _pending.pop(owner, None)
-    secret = message.text.strip()
+    string = msg.text.strip()
     try:
-        await message.delete()
+        await msg.delete()
     except Exception:
         pass
-    if not 40 <= len(secret) <= 8192:
-        await client.send_message(owner, 'Invalid session string length.')
-        message.stop_propagation()
-        return
-    await _disconnect(owner)
-    account = None
+    old = _sessions.pop(msg.from_user.id, None)
+    if old:
+        try:
+            await (old[1].stop() if old[0] == "pyrogram" else old[1].disconnect())
+        except Exception:
+            pass
+    client = None
     try:
-        if provider == 'pyrogram':
-            from pyrogram import Client as UserClient
-            account = UserClient(name=f'admin_{owner}', api_id=APP_ID, api_hash=API_HASH,
-                                 session_string=secret, in_memory=True, no_updates=True)
-            await account.start()
-            me = await account.get_me()
+        if kind == "pyrogram":
+            from pyrogram import Client
+            client = Client(f"user_{msg.from_user.id}", api_id=APP_ID, api_hash=API_HASH, session_string=string, in_memory=True, no_updates=True)
+            await client.start()
+            me = await client.get_me()
         else:
             from telethon import TelegramClient
             from telethon.sessions import StringSession
-            account = TelegramClient(StringSession(secret), APP_ID, API_HASH)
-            await account.connect()
-            if not await account.is_user_authorized():
-                raise ValueError('Session is not authorized')
-            me = await account.get_me()
-        _sessions[owner] = (provider, account)
-        await client.send_message(owner, f'✅ {provider} connected as account ID {me.id}. /logout only disconnects locally. Sessions are not persisted across restarts.')
-    except Exception as exc:
-        if account is not None:
+            client = TelegramClient(StringSession(string), APP_ID, API_HASH)
+            await client.connect()
+            if not await client.is_user_authorized():
+                raise ValueError("Unauthorized session")
+            me = await client.get_me()
+        _sessions[msg.from_user.id] = (kind, client)
+        await msg.reply(f"Connected ({kind}) as ID {me.id}. This session only manages your login, not file delivery.")
+    except Exception as e:
+        if client:
             try:
-                if provider == 'pyrogram':
-                    await account.stop()
-                else:
-                    await account.disconnect()
+                await (client.stop() if kind == "pyrogram" else client.disconnect())
             except Exception:
                 pass
-        await client.send_message(owner, f'❌ Session connection failed ({type(exc).__name__}). No session stored.')
-    finally:
-        message.stop_propagation()
+        await msg.reply(f"Connection failed: {type(e).__name__}. Check string, API credentials and session validity.")
+    raise StopPropagation
