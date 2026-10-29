@@ -11,7 +11,7 @@ load_dotenv()
 TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN") or os.getenv("BOT_TOKEN", "")
 
 #Your API ID from my.telegram.org
-APP_ID = int(os.getenv("APP_ID") or os.getenv("API_ID") or "0")
+APP_ID = int(os.getenv("APP_ID") or os.getenv("APP_ID") or "0")
 
 #Your API Hash from my.telegram.org
 API_HASH = os.environ.get("API_HASH", "")
